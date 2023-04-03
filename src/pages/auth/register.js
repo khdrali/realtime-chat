@@ -2,8 +2,83 @@ import React from "react";
 import Link from "next/link";
 import style from "@/styles/register.module.scss";
 import google from "public/images/google.svg";
+import {
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
+import { auth } from "@/utils/firebase";
+import * as useDb from "@/utils/database";
 
-export default function Login() {
+const provider = new GoogleAuthProvider();
+
+export default function Register() {
+  const [email, setEmail] = React.useState("");
+  const [name, setName] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [usersList, setUsersList] = React.useState({});
+
+  React.useEffect(() => {
+    useDb.getData("users", (snapshot) => {
+      const data = snapshot.val();
+
+      if (data) {
+        setUsersList(data);
+      }
+    });
+  }, []);
+
+  const registerManual = () => {
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        // ...
+
+        useDb.sendData("users", {
+          ...usersList,
+          [user.uid]: {
+            emailVerified: user.emailVerified,
+            timestamp: new Date().getTime(),
+            user_id: user.uid,
+            photo: user.photoURL,
+            fullname: name,
+          },
+        });
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+      });
+  };
+
+  const registGoogle = () => {
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const user = result.user;
+        // IdP data available using getAdditionalUserInfo(result)
+        useDb.sendData("users", {
+          ...usersList,
+          [user.uid]: {
+            emailVerified: user.emailVerified,
+            timestamp: new Date().getTime(),
+            user_id: user.uid,
+            photo: user.photoURL,
+            fullname: user.displayName,
+          },
+        });
+      })
+      .catch((error) => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // The email of the user's account used.
+        const email = error.customData.email;
+        // The AuthCredential type that was used.
+        const credential = GoogleAuthProvider.credentialFromError(error);
+        // ...
+      });
+  };
   return (
     <>
       <div className={style.main}>
@@ -17,6 +92,7 @@ export default function Login() {
                 class="form-control"
                 id="floatingName"
                 placeholder="Your Name"
+                onChange={(e) => setName(e.target.value)}
               />
               <label for="floatingName">Name</label>
             </div>
@@ -26,6 +102,7 @@ export default function Login() {
                 class="form-control"
                 id="floatingInput"
                 placeholder="name@example.com"
+                onChange={(e) => setEmail(e.target.value)}
               />
               <label for="floatingInput">Email address</label>
             </div>
@@ -35,12 +112,15 @@ export default function Login() {
                 class="form-control"
                 id="floatingPassword"
                 placeholder="Password"
+                onChange={(e) => setPassword(e.target.value)}
               />
               <label for="floatingPassword">Password</label>
             </div>
-            <button className={`btn ${style.login}`}>Register</button>
+            <button className={`btn ${style.login}`} onClick={registerManual}>
+              Register
+            </button>
             <p className={style.with}>Register with</p>
-            <button className={`btn ${style.google}`}>
+            <button className={`btn ${style.google}`} onClick={registGoogle}>
               <img src={google.src}></img>
               Google
             </button>
