@@ -35,21 +35,25 @@ export default function Register() {
         const user = userCredential.user;
         // ...
 
+        console.log(user);
+
         useDb.sendData("users", {
           ...usersList,
           [user.uid]: {
             emailVerified: user.emailVerified,
             timestamp: new Date().getTime(),
             user_id: user.uid,
-            photo: user.photoURL,
+            photo:
+              "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png",
             fullname: name,
+            phone: user.phoneNumber,
+            email: user.email,
           },
         });
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        console.log(error);
       });
   };
 
@@ -66,6 +70,9 @@ export default function Register() {
             user_id: user.uid,
             photo: user.photoURL,
             fullname: user.displayName,
+            phone: user.phoneNumber,
+            email: user.email,
+            is_online: false,
           },
         });
       })
