@@ -93,7 +93,7 @@ export default function Register() {
         <div className={style.content}>
           <div className={`p-4 ${style.border}`}>
             <h3>Register</h3>
-            <p>Let's Create Your Account!</p>
+            <p>Let&apos;s Create Your Account!</p>
             <div class="form-floating mb-4">
               <input
                 type="text"

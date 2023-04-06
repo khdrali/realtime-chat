@@ -4,7 +4,7 @@ import picture from "public/images/profile.png";
 import * as useDb from "@/utils/database";
 import { Avatar, ListItemAvatar } from "@mui/material";
 
-export default function profile() {
+export default function Profile() {
   const [usersList, setUsersList] = React.useState({});
 
   React.useEffect(() => {
